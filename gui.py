@@ -5,6 +5,7 @@ import os
 import copy
 import dill
 import threading
+import multiprocessing
 import numpy as np
 import attenuation
 from integration import Integration
@@ -59,6 +60,8 @@ class Model:
         return d
 
     def save(self):
+        if not os.path.exists('.tmp'):
+            os.makedirs('.tmp')
         with open(os.path.join('.tmp', 'settings'), 'wb') as dump:
             dill.dump(self.get_current_state(), dump)
 
@@ -80,6 +83,7 @@ class Model:
 
 
 def compute():
+    clear()
     m.save()
 
     button_compute.config(state=DISABLED)
@@ -132,8 +136,6 @@ def compute():
             plt.tight_layout()
             canvas.draw()
 
-            clear()
-
             button_erase.config(state=NORMAL)
             window.deiconify()
 
@@ -168,6 +170,8 @@ def clear():
         os.remove(os.path.join('.tmp', 'progress'))
     except FileNotFoundError:
         pass
+    # except PermissionError:
+    #     pass
 
 
 def erase(destroy: bool = False):
@@ -201,6 +205,7 @@ def check_key_callback(*_) -> None:
 
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
 
     stop_listen = threading.Event()
     clear()
